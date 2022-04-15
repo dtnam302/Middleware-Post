@@ -23,10 +23,10 @@ const newPost = async (req, res, next) => {
   const urls = await uploadImage(files, folder);
   console.log(urls);
   console.log("====URLS=====");
-  for (const room_body in urls) {
+  for (const room_body of urls) {
     console.log(room_body);
     console.log("====ROOM_BODY=====");
-    const newRoom = new Room({ room_body });
+    const newRoom = new Room(room_body);
     newRoom.post = newPost;
     await newRoom.save();
     newPost.rooms.push(newRoom._id);
@@ -38,9 +38,6 @@ const newPost = async (req, res, next) => {
 
   user.posts.push(newPost._id);
   await user.save();
-
-  console.log(user.posts);
-  console.log("====POST=====");
 
   return res.status(200).json({ post: newPost });
 };
@@ -54,18 +51,20 @@ const uploadImage = async (files, folder) => {
   const uploader = async (path, originalname) =>
     await cloudinary.uploader.upload(path, {
       folder: `${folder}`,
-      use_filename: true,
-      public_id: originalname,
+      //use_filename: true,
+      //public_id: originalname,
     });
 
   const urls = [];
+  console.log(files.length);
 
   for (const file of files) {
     const { path, originalname } = file;
-    var org_name = originalname.split(".")[0]; // phong_khach.jpg => phong_khach
+    let org_name = originalname.split(".")[0]; // phong_khach.jpg => phong_khach
     //org_name shoule be phong_khach, phong_ngu v.v.
-    var newPath = await uploader(path, org_name);
+    let newPath = await uploader(path, org_name);
+    console.log(newPath);
     urls.push({ url: newPath.url, org_name: org_name });
-    return urls;
   }
+  return urls;
 };
